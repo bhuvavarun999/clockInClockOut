@@ -1,0 +1,141 @@
+<main class="wp-block-group" style="margin-top:0">
+    <div class="wp-block-group alignfull" style="padding:50px 50px 0px;">
+        <h1 class="wp-block-heading has-text-align-center has-x-large-font-size" style="border-style:none;border-width:0px;">
+            Varun Bhuva
+        </h1>
+        
+        <!-- Today's and Yesterday's Duration -->
+        <div style="display: flex; justify-content: space-between; margin-top:20px;">
+            <div style="width:45%; padding:20px; background-color:#dff0d8; border-radius:5px; margin-bottom: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                <strong>Today's Duration: </strong><span id="todayDuration">00:00:00</span>
+            </div>
+            <div style="width:45%; padding:20px; background-color:#f2dede; border-radius:5px; margin-bottom: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-left: 10%;"> <!-- Added margin-left for spacing -->
+                <strong>Yesterday's Duration: </strong><span id="yesterdayDuration">00:00:00</span>
+            </div>
+        </div>
+
+        <!-- Don't forget to clock in/out -->
+        <p style="text-align:center; font-size:18px; margin-top:15px;">Don't forget to clock in and clock out</p>
+
+        <!-- Clock In/Out Buttons -->
+        <div class="wp-block-buttons" style="display: flex; justify-content: center; gap: 10px; margin-top:20px;">
+            <button id="clockInBtn" class="wp-block-button__link wp-element-button" style="background-color:green; color:white; padding:15px 30px; font-size:18px; border-radius:5px;">Clock In</button>
+            <button id="clockOutBtn" class="wp-block-button__link wp-element-button" style="background-color:red; color:white; padding:15px 30px; font-size:18px; border-radius:5px;">Clock Out</button>
+        </div>
+
+        <!-- Status message after clicking buttons -->
+        <div id="messageArea" style="text-align:center; font-size:16px; margin-top:15px;"></div>
+
+        <!-- Table to Display Clock-In/Out Data -->
+        <table id="timeTable" border="1" style="width:100%; text-align:center; margin-top:20px; border-collapse:collapse;">
+            <thead>
+                <tr>
+                    <th>Clock In Time</th>
+                    <th>Clock Out Time</th>
+                    <th>Duration</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const clockInBtn = document.getElementById('clockInBtn');
+    const clockOutBtn = document.getElementById('clockOutBtn');
+    const timeTable = document.getElementById('timeTable').getElementsByTagName('tbody')[0];
+    const messageArea = document.getElementById('messageArea');
+    const statusMessage = document.getElementById('statusMessage');
+
+    // Function to fetch the latest data from the server
+    function fetchData() {
+        fetch('clock_records.php?action=fetch')
+            .then(response => response.json())
+            .then(data => {
+                // Clear existing table rows
+                timeTable.innerHTML = '';
+
+                // Update today's and yesterday's duration
+                document.getElementById('todayDuration').innerText = data.today_duration || '00:00:00';
+                document.getElementById('yesterdayDuration').innerText = data.yesterday_duration || '00:00:00';
+
+                // Populate the table with the latest 5 records
+                data.records.forEach(record => {
+                    const newRow = timeTable.insertRow();
+                    newRow.insertCell(0).innerText = record.clock_in_time;
+                    newRow.insertCell(1).innerText = record.clock_out_time || 'Pending...';
+                    newRow.insertCell(2).innerText = record.duration || 'Pending...';
+                });
+
+                // Update status message and button states based on current clock status
+                if (data.clock_status === 'clocked_in') {
+                    statusMessage.innerText = "You are already clocked in, please clock out first.";
+                    messageArea.innerText = "Stay focused and good luck!";
+                    messageArea.style.color = 'green';
+                    clockInBtn.disabled = true;
+                    clockOutBtn.disabled = false;
+                } else if (data.clock_status === 'clocked_out') {
+                    statusMessage.innerText = "You are already clocked out, please clock in first.";
+                    messageArea.innerText = "Catch you later, don’t miss out next time!";
+                    messageArea.style.color = 'green';
+                    clockInBtn.disabled = false;
+                    clockOutBtn.disabled = true;
+                } else {
+                    statusMessage.innerText = "Start clocking!";
+                    messageArea.innerText = "Ready to clock in or out!";
+                    messageArea.style.color = 'green';
+                    clockInBtn.disabled = false;
+                    clockOutBtn.disabled = false;
+                }
+            });
+    }
+
+    // Initial data fetch
+    fetchData();
+
+    // Clock In
+    clockInBtn.addEventListener('click', () => {
+        fetch('clock_records.php?action=clock_in', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                // Always update the data and UI, even if no clock-in occurred
+                fetchData(); // Refresh the data
+
+                if (data.error) {
+                    messageArea.innerText = data.error;
+                    messageArea.style.color = 'red';
+                } else {
+                    messageArea.innerText = "Stay focused and good luck!";
+                    messageArea.style.color = 'green';
+                }
+            })
+            .catch(error => {
+                messageArea.innerText = 'Error: ' + error.message;
+                messageArea.style.color = 'red';
+            });
+    });
+
+    // Clock Out
+    clockOutBtn.addEventListener('click', () => {
+        fetch('clock_records.php?action=clock_out', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                // Always update the data and UI, even if no clock-out occurred
+                fetchData(); // Refresh the data
+
+                if (data.error) {
+                    messageArea.innerText = data.error;
+                    messageArea.style.color = 'red';
+                } else {
+                    messageArea.innerText = "Catch you later, don’t miss out next time!";
+                    messageArea.style.color = 'green';
+                }
+            })
+            .catch(error => {
+                messageArea.innerText = 'Error: ' + error.message;
+                messageArea.style.color = 'red';
+            });
+    });
+});
+</script>

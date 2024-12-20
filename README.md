@@ -107,8 +107,7 @@ Feel free to fork the repository and submit pull requests. Any contributions to 
 
 For any issues or inquiries, please contact:
 
-- **Email**: support@yourdomain.com
-- **GitHub Issues**: [Report a Bug](https://github.com/your-repo-url/clock-in-out-system/issues)
+- **Email**: bhuvavarun99@gmail.com
 
 ---
 
