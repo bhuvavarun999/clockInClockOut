@@ -52,13 +52,6 @@ The system includes robust error handling mechanisms, such as:
 - Preventing multiple clock-ins without clocking out.
 - Displaying clear error messages for invalid actions.
 
----
-
-## 🎨 User Interface Example
-
-| **Clock In/Out Table**     | **Today's Duration Box**     | **Yesterday's Duration Box** |
-|----------------------------|------------------------------|------------------------------|
-| ![Table Screenshot](images/table_screenshot.png) | ![Today Box](images/today_box.png) | ![Yesterday Box](images/yesterday_box.png) |
 
 ---
 
