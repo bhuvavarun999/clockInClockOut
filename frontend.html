@@ -37,6 +37,20 @@
             </thead>
             <tbody></tbody>
         </table>
+<div style="margin-top: 20px; padding: 20px; background-color: #f7f7f7; border-radius: 5px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+    <h3>Last 7 Days Durations</h3>
+    <table id="last7DaysTable" border="1" cellpadding="10" style="width: 100%; border-collapse: collapse; text-align: left;">
+        <thead>
+            <tr style="background-color: #d9edf7;">
+                <th>Date</th>
+                <th>Total Duration</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Rows will be dynamically added here -->
+        </tbody>
+    </table>
+</div>
     </div>
 </main>
 
@@ -59,6 +73,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Update today's and yesterday's duration
                 document.getElementById('todayDuration').innerText = data.today_duration || '00:00:00';
                 document.getElementById('yesterdayDuration').innerText = data.yesterday_duration || '00:00:00';
+
+// Clear the existing rows in the Last 7 Days table
+            const last7DaysTable = document.getElementById('last7DaysTable').getElementsByTagName('tbody')[0];
+            last7DaysTable.innerHTML = '';
+
+            // Populate the Last 7 Days table
+            data.last7days_durations.forEach(day => {
+                const newRow = last7DaysTable.insertRow();
+                newRow.insertCell(0).innerText = day.date;
+                newRow.insertCell(1).innerText = day.total_duration || '00:00:00';
+            });
 
                 // Populate the table with the latest 5 records
                 data.records.forEach(record => {

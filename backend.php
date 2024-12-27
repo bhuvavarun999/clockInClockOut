@@ -18,6 +18,20 @@ if ($action === 'fetch') {
     $today_result = $mysqli->query("SELECT SEC_TO_TIME(SUM(TIME_TO_SEC(duration))) AS total_duration FROM clock_records WHERE DATE(clock_in_time) = CURDATE()");
     $yesterday_result = $mysqli->query("SELECT SEC_TO_TIME(SUM(TIME_TO_SEC(duration))) AS total_duration FROM clock_records WHERE DATE(clock_in_time) = CURDATE() - INTERVAL 1 DAY");
 
+    // Fetch total duration for the last 7 days, grouped by date
+    $last7days_result = $mysqli->query("
+        SELECT DATE(clock_in_time) AS date, SEC_TO_TIME(SUM(TIME_TO_SEC(duration))) AS total_duration 
+        FROM clock_records 
+        WHERE clock_in_time >= CURDATE() - INTERVAL 6 DAY
+        GROUP BY DATE(clock_in_time)
+        ORDER BY DATE(clock_in_time) DESC
+    ");
+
+    $last7days_durations = [];
+    while ($row = $last7days_result->fetch_assoc()) {
+        $last7days_durations[] = $row;
+    }
+
     // Fetch the latest 5 clock records
     $result = $mysqli->query("SELECT clock_in_time, clock_out_time, duration FROM clock_records ORDER BY clock_in_time DESC LIMIT 5");
 
@@ -42,6 +56,7 @@ if ($action === 'fetch') {
     echo json_encode([
         'today_duration' => $today_result->fetch_assoc()['total_duration'] ?? '00:00:00',
         'yesterday_duration' => $yesterday_result->fetch_assoc()['total_duration'] ?? '00:00:00',
+        'last7days_durations' => $last7days_durations,
         'records' => $clock_records,
         'clock_status' => $status
     ]);
